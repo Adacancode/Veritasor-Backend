@@ -1,21 +1,54 @@
-import type { Request, Response, NextFunction } from 'express'
+import { Request, Response, NextFunction } from 'express'
+import { verifyToken } from '../utils/jwt.js'
+import { findUserById } from '../repositories/userRepository.js'
+
+// Extend Express Request to include user
+declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        userId: string
+        email: string
+      }
+    }
+  }
+}
 
 /**
- * Require authentication: returns 401 if no valid auth is present.
- * Sets res.locals.userId when present (e.g. for idempotency key scoping).
- * Accepts any non-empty Authorization header for now; replace with real auth (JWT, etc.) later.
+ * Middleware to verify JWT token from Authorization header
+ * Attaches user to req.user if valid
  */
-export function requireAuth(req: Request, res: Response, next: NextFunction): void {
+export async function requireAuth(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
   const authHeader = req.headers.authorization
-  const token = typeof authHeader === 'string' && authHeader.startsWith('Bearer ')
-    ? authHeader.slice(7).trim()
-    : undefined
 
-  if (!token) {
-    res.status(401).json({ error: 'Unauthorized', message: 'Missing or invalid Authorization' })
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    res.status(401).json({ error: 'Missing or invalid authorization header' })
     return
   }
 
-  ;(res as Response & { locals: { userId?: string } }).locals.userId = token
+  const token = authHeader.slice(7) // Remove 'Bearer ' prefix
+
+  const payload = verifyToken(token)
+  if (!payload) {
+    res.status(401).json({ error: 'Invalid or expired token' })
+    return
+  }
+
+  // Optionally verify user still exists
+  const user = await findUserById(payload.userId)
+  if (!user) {
+    res.status(401).json({ error: 'User not found' })
+    return
+  }
+
+  req.user = {
+    userId: payload.userId,
+    email: payload.email,
+  }
+
   next()
 }

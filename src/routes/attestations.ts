@@ -1,5 +1,4 @@
 import { Router } from 'express'
-import { requireAuth } from '../middleware/requireAuth.js'
 import { idempotencyMiddleware } from '../middleware/idempotency.js'
 
 export const attestationsRouter = Router()
@@ -14,21 +13,10 @@ attestationsRouter.get('/', (_req, res) => {
   })
 })
 
-// Placeholder: get by id (will integrate DB later)
-attestationsRouter.get('/:id', (req, res) => {
-  res.json({
-    id: req.params.id,
-    message: 'Attestation detail will be loaded from DB + Stellar',
-  })
-})
-
 // Placeholder: submit attestation (will call Merkle engine + Soroban later). Idempotent by Idempotency-Key.
 attestationsRouter.post(
   '/',
-  idempotencyMiddleware({
-    scope: 'attestations',
-    getUserKey: (_req, res) => (res.locals as { userId?: string }).userId ?? (res.req.ip ?? 'anonymous'),
-  }),
+  idempotencyMiddleware({ scope: 'attestations' }),
   (req, res) => {
     res.status(201).json({
       message: 'Attestation submission will invoke Merkle generator and Soroban contract',
@@ -37,11 +25,3 @@ attestationsRouter.post(
     })
   }
 )
-
-// Placeholder: revoke attestation (will integrate Soroban later)
-attestationsRouter.delete('/:id', (req, res) => {
-  res.status(200).json({
-    id: req.params.id,
-    message: 'Attestation revoke will invoke Soroban contract',
-  })
-})
