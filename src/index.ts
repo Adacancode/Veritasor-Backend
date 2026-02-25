@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import { attestationsRouter } from './routes/attestations.js'
+import { analyticsRouter } from './routes/analytics.js'
 import { healthRouter } from './routes/health.js'
 import { authRouter } from './routes/auth.js'
 import {
