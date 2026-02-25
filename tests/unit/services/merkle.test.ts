@@ -1,38 +1,37 @@
-import assert from 'assert';
+import { describe, expect, it } from 'vitest';
 import MerkleTree from '../../../src/services/merkle';
 
-function hex(s: string) {
-  return s;
-}
+describe('MerkleTree', () => {
+  it('produces deterministic roots for identical leaves', () => {
+    const leaves = ['a', 'b', 'c', 'd', 'e'];
+    const t1 = new MerkleTree(leaves);
+    const t2 = new MerkleTree(leaves);
 
-(function run() {
-  // sample leaves
-  const leaves = ['a', 'b', 'c', 'd', 'e'];
+    expect(t1.getRoot()).toBe(t2.getRoot());
+  });
 
-  // Deterministic root: two constructions should match
-  const t1 = new MerkleTree(leaves);
-  const t2 = new MerkleTree(leaves);
-  assert.strictEqual(t1.getRoot(), t2.getRoot(), 'Roots should be deterministic and equal');
+  it('verifies a valid proof for a leaf', () => {
+    const leaves = ['a', 'b', 'c', 'd', 'e'];
+    const tree = new MerkleTree(leaves);
+    const index = 2;
+    const proof = tree.getProof(index);
+    const root = tree.getRoot();
 
-  // Valid proof for a leaf
-  const index = 2; // 'c'
-  const proof = t1.getProof(index);
-  const root = t1.getRoot();
-  const ok = MerkleTree.verifyProof(leaves[index], proof, root, index);
-  assert.ok(ok, 'Valid proof should verify');
+    expect(MerkleTree.verifyProof(leaves[index], proof, root, index)).toBe(true);
+  });
 
-  // Invalid proof should fail
-  const badProof = [...proof];
-  if (badProof.length > 0) {
-    // corrupt the first sibling
-    badProof[0] = hex(badProof[0].replace(/^[0-9a-f]/, (c) => (c === '0' ? '1' : '0')));
-  }
-  const bad = MerkleTree.verifyProof(leaves[index], badProof, root, index);
-  assert.strictEqual(bad, false, 'Tampered proof should not verify');
+  it('rejects tampered proof', () => {
+    const leaves = ['a', 'b', 'c', 'd', 'e'];
+    const tree = new MerkleTree(leaves);
+    const index = 2;
+    const proof = tree.getProof(index);
+    const root = tree.getRoot();
+    const tamperedProof = [...proof];
 
-  // report
-  // If running with a test runner these logs are optional
-  // Keep concise output for manual runs
-  // eslint-disable-next-line no-console
-  console.log('Merkle tests passed');
-})();
+    if (tamperedProof.length > 0) {
+      tamperedProof[0] = tamperedProof[0].replace(/^[0-9a-f]/, (char) => (char === '0' ? '1' : '0'));
+    }
+
+    expect(MerkleTree.verifyProof(leaves[index], tamperedProof, root, index)).toBe(false);
+  });
+});
