@@ -10,6 +10,7 @@ import {
   versionResponseMiddleware,
 } from './middleware/apiVersion.js'
 import businessRoutes from './routes/businesses.js'
+import integrationsRouter from './routes/integrations.js'
 
 export const app = express();
 const PORT = process.env.PORT ?? 3000;
@@ -26,6 +27,7 @@ app.use('/api/health', healthRouter)
 app.use('/api/attestations', attestationsRouter)
 app.use('/api/businesses', businessRoutes)
 app.use('/api/analytics', analyticsRouter)
+app.use('/api/integrations', integrationsRouter)
 
 app.use(errorHandler);
 
