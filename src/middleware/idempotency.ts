@@ -41,7 +41,7 @@ export interface IdempotencyOptions {
   scope: string
   ttlMs?: number
   /** Return a string that identifies the user (e.g. res.locals.userId, req.ip). Default: req.ip ?? 'anonymous' */
-  getUserKey?: (req: Request, res: Response) => string
+  getUserKey?: (req: Request) => string
 }
 
 /**
@@ -63,7 +63,7 @@ export function idempotencyMiddleware(options: IdempotencyOptions) {
       return
     }
 
-    const userKey = getUserKey(req, res)
+    const userKey = getUserKey(req)
     const storeKey = `idempotency:${scope}:${userKey}:${keyValue}`
 
     const cached = await store.get(storeKey)
