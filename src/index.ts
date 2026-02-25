@@ -5,6 +5,7 @@ import { healthRouter } from "./routes/health.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { analyticsRouter } from './routes/analytics.js'
 import businessRoutes from './routes/businesses.js'
+import integrationsRazorpayRouter from './routes/integrations-razorpay.js'
 
 export const app = express();
 const PORT = process.env.PORT ?? 3000;
@@ -16,6 +17,7 @@ app.use('/api/health', healthRouter)
 app.use('/api/attestations', attestationsRouter)
 app.use('/api/businesses', businessRoutes)
 app.use('/api/analytics', analyticsRouter)
+app.use('/api/integrations/razorpay', integrationsRazorpayRouter)
 
 app.use(errorHandler);
 
