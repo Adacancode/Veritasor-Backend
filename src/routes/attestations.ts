@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { NextFunction, Request, Response, Router } from 'express';
 import { z } from 'zod';
 import { requireAuth } from '../middleware/auth.js';
+import { idempotencyMiddleware } from '../middleware/idempotency.js';
 import { validateBody, validateQuery } from '../middleware/validate.js';
 import { attestationRepository } from '../repositories/attestation.js';
 import { businessRepository } from '../repositories/business.js';
@@ -252,6 +253,7 @@ attestationsRouter.get(
 attestationsRouter.post(
   '/',
   requireAuth,
+  idempotencyMiddleware({ scope: 'attestations' }),
   validateBody(submitBodySchema),
   asyncHandler(async (req, res) => {
     const payload = req.body as z.infer<typeof submitBodySchema>;
