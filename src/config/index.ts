@@ -24,4 +24,10 @@ export const config = {
   cors: {
     origin: getAllowedOrigins(),
   },
+  jobs: {
+    attestationReminder: {
+      // Run every minute
+      schedule: '*/1 * * * *',
+    }
+  }
 } as const
